@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Presupuestos Web</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div>
+            <span class="eyebrow">Cotizador</span>
+            <h1>Presupuestos Web</h1>
+          </div>
+          <button class="icon-button" id="newQuoteButton" title="Nueva cotización" type="button">+</button>
+        </div>
+
+        <div class="search-block">
+          <label for="quoteSearch">Buscar</label>
+          <input id="quoteSearch" type="search" placeholder="Cliente, número o proyecto">
+        </div>
+
+        <div class="quote-list-header">
+          <span>Cotizaciones guardadas</span>
+          <button id="refreshButton" type="button">Actualizar</button>
+        </div>
+        <div class="quote-list" id="quoteList"></div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <span class="eyebrow" id="quoteNumberLabel">Nueva cotización</span>
+            <h2 id="screenTitle">Armar presupuesto</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="duplicateButton" type="button">Duplicar</button>
+            <button id="deleteButton" class="danger" type="button">Eliminar</button>
+            <button id="printButton" type="button">PDF</button>
+            <button id="saveButton" class="primary" type="button">Guardar</button>
+          </div>
+        </header>
+
+        <section class="status-row" id="statusMessage">Listo para cotizar.</section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>Datos para el PDF</h3>
+            <span>Quién emite el presupuesto</span>
+          </div>
+          <div class="form-grid two">
+            <label>Marca o nombre comercial
+              <input id="issuerBrand" type="text" placeholder="Ej: Alejandro Web Studio">
+            </label>
+            <label>Bajada breve
+              <input id="issuerTagline" type="text" placeholder="Ej: Desarrollo web, apps y automatizaciones">
+            </label>
+            <label>Email
+              <input id="issuerEmail" type="email" placeholder="tu@email.com">
+            </label>
+            <label>Teléfono / WhatsApp
+              <input id="issuerPhone" type="tel" placeholder="+54 9 ...">
+            </label>
+            <label>Web o portfolio
+              <input id="issuerWebsite" type="text" placeholder="www.tusitio.com">
+            </label>
+            <label>Ubicación
+              <input id="issuerLocation" type="text" placeholder="Buenos Aires, Argentina">
+            </label>
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Cliente</h3>
+              <span>Se guarda en la base de datos</span>
+            </div>
+            <div class="form-grid two">
+              <label>Nombre
+                <input id="clientName" type="text" placeholder="Ej: Laura Gómez">
+              </label>
+              <label>Empresa
+                <input id="clientCompany" type="text" placeholder="Ej: Estudio Norte">
+              </label>
+              <label>Email
+                <input id="clientEmail" type="email" placeholder="cliente@mail.com">
+              </label>
+              <label>Teléfono
+                <input id="clientPhone" type="tel" placeholder="+54 9 ...">
+              </label>
+            </div>
+            <label>Notas del cliente
+              <textarea id="clientNotes" rows="2" placeholder="Contexto comercial, referencias o condiciones especiales"></textarea>
+            </label>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Proyecto</h3>
+              <span>Datos generales del presupuesto</span>
+            </div>
+            <div class="form-grid two">
+              <label>Título
+                <input id="quoteTitle" type="text" value="Desarrollo de sitio web">
+              </label>
+              <label>Tipo
+                <select id="projectType">
+                  <option>Sitio web</option>
+                  <option>Página de presentación o venta</option>
+                  <option>Tienda online</option>
+                  <option>Aplicación web</option>
+                  <option>Aplicación móvil</option>
+                  <option>Automatización</option>
+                </select>
+              </label>
+              <label>Moneda
+                <select id="currency">
+                  <option value="ARS">ARS</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                </select>
+              </label>
+              <label>Estado
+                <select id="quoteStatus">
+                  <option>Borrador</option>
+                  <option>Enviado</option>
+                  <option>Aprobado</option>
+                  <option>Rechazado</option>
+                </select>
+              </label>
+            </div>
+            <div class="segmented" role="tablist" aria-label="Modo de cotización">
+              <button id="manualModeButton" class="active" type="button">Manual</button>
+              <button id="autoModeButton" type="button">Automático</button>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel mode-panel" id="manualPanel">
+          <div class="panel-heading">
+            <h3>Servicios y precios</h3>
+            <span>Elegí servicios, cantidades y valores</span>
+          </div>
+          <div class="catalog-tabs" id="catalogTabs"></div>
+          <div class="catalog-grid" id="catalogGrid"></div>
+          <div class="custom-row">
+            <input id="customName" type="text" placeholder="Servicio personalizado">
+            <input id="customQty" type="number" min="1" step="1" value="1" title="Cantidad">
+            <input id="customPrice" type="number" min="0" step="1000" placeholder="Precio">
+            <select id="customBilling" title="Tipo de cobro">
+              <option value="once">Único</option>
+              <option value="monthly">Mensual</option>
+            </select>
+            <button id="addCustomButton" type="button">Agregar</button>
+          </div>
+        </section>
+
+        <section class="panel mode-panel hidden" id="autoPanel">
+          <div class="panel-heading">
+            <h3>Armado automático</h3>
+            <span>Calcula una propuesta base según alcance</span>
+          </div>
+          <div class="auto-grid">
+            <label>Tipo de trabajo
+              <select id="autoKind">
+                <option value="website">Sitio web institucional</option>
+                <option value="landing">Página de presentación o venta</option>
+                <option value="ecommerce">Tienda online</option>
+                <option value="webapp">Aplicación web</option>
+                <option value="mobileapp">Aplicación móvil</option>
+                <option value="automation">Automatización</option>
+              </select>
+            </label>
+            <label>Páginas, pantallas o flujos
+              <input id="autoUnits" type="number" min="1" step="1" value="5">
+            </label>
+            <label>Complejidad
+              <select id="autoComplexity">
+                <option value="simple">Simple</option>
+                <option value="medium" selected>Media</option>
+                <option value="advanced">Avanzada</option>
+              </select>
+            </label>
+            <label>Base de datos
+              <select id="autoDatabase">
+                <option value="none">Sin base de datos</option>
+                <option value="basic">Base de datos básica</option>
+                <option value="advanced">Base avanzada</option>
+              </select>
+            </label>
+            <label>Puesta en marcha
+              <select id="autoLaunch">
+                <option value="none">Sin deploy</option>
+                <option value="standard">Deploy + puesta en marcha</option>
+                <option value="advanced">Deploy avanzado en servidor</option>
+              </select>
+            </label>
+            <label>Dominio
+              <select id="autoDomain">
+                <option value="none">Sin dominio</option>
+                <option value="existing">Ya tiene dominio: configurar DNS</option>
+                <option value="client">Cliente compra dominio: configurar DNS</option>
+                <option value="managed">Gestionar compra/renovación + configurar</option>
+              </select>
+            </label>
+            <label>Servidor / hosting
+              <select id="autoHosting">
+                <option value="none">Sin hosting</option>
+                <option value="basic">Hosting básico mensual</option>
+                <option value="managed">Servidor administrado mensual</option>
+              </select>
+            </label>
+            <label>Gestión interna
+              <select id="autoAdmin">
+                <option value="none">Sin gestión/admin</option>
+                <option value="basic">Panel simple</option>
+                <option value="advanced">Panel avanzado</option>
+              </select>
+            </label>
+            <label>Integraciones
+              <select id="autoIntegrations">
+                <option value="0">Sin integraciones</option>
+                <option value="1">1 integración</option>
+                <option value="2">2 integraciones</option>
+                <option value="3">3 integraciones</option>
+              </select>
+            </label>
+            <label>Contenido inicial
+              <select id="autoContent">
+                <option value="none">Lo carga el cliente</option>
+                <option value="basic">Carga básica</option>
+                <option value="full">Carga completa</option>
+              </select>
+            </label>
+            <label>Plazo
+              <select id="autoUrgency">
+                <option value="normal">Normal</option>
+                <option value="fast">Prioritario</option>
+              </select>
+            </label>
+            <label>Mantenimiento
+              <select id="autoMaintenance">
+                <option value="none">Sin mantenimiento</option>
+                <option value="basic">Básico mensual</option>
+                <option value="pro">Pro mensual</option>
+              </select>
+            </label>
+            <label>Gestión mensual
+              <select id="autoManagement">
+                <option value="none">Sin gestión mensual</option>
+                <option value="light">Gestión liviana</option>
+                <option value="full">Gestión completa</option>
+              </select>
+            </label>
+          </div>
+          <div class="auto-actions">
+            <button id="generateAutoButton" class="primary" type="button">Armar automáticamente</button>
+            <button id="addAutoButton" type="button">Sumar al presupuesto actual</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h3>Desglose</h3>
+            <span>Detalle editable para enviar al cliente</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Concepto</th>
+                  <th>Detalle</th>
+                  <th>Cant.</th>
+                  <th>Unitario</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="recurring-title">Servicios mensuales</div>
+          <div class="table-wrap compact">
+            <table>
+              <thead>
+                <tr>
+                  <th>Concepto</th>
+                  <th>Detalle</th>
+                  <th>Cant.</th>
+                  <th>Mensual</th>
+                  <th>Total mensual</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="recurringBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel">
+            <div class="panel-heading">
+              <h3>Alcance</h3>
+              <span>Texto que sale en el PDF</span>
+            </div>
+            <label>Incluye
+              <textarea id="scope" rows="5">Diseño responsive, desarrollo y configuración inicial según el alcance detallado. La puesta online, dominio, hosting y mantenimiento se incluyen solo si figuran como ítems del presupuesto.</textarea>
+            </label>
+            <label>Notas
+              <textarea id="notes" rows="4" placeholder="Aclaraciones, exclusiones, tiempos estimados, material requerido"></textarea>
+            </label>
+          </section>
+
+          <section class="panel totals-panel">
+            <div class="panel-heading">
+              <h3>Totales</h3>
+              <span>Valores finales</span>
+            </div>
+            <div class="form-grid two">
+              <label>Descuento
+                <input id="discount" type="number" min="0" step="1000" value="0">
+              </label>
+              <label>IVA %
+                <input id="taxPercent" type="number" min="0" step="0.5" value="0">
+              </label>
+            </div>
+            <dl class="totals">
+              <div><dt>Subtotal</dt><dd id="subtotalValue">$0</dd></div>
+              <div><dt>Descuento</dt><dd id="discountValue">$0</dd></div>
+              <div><dt>Impuestos</dt><dd id="taxValue">$0</dd></div>
+              <div class="grand"><dt>Total proyecto</dt><dd id="totalValue">$0</dd></div>
+              <div class="monthly"><dt>Total mensual</dt><dd id="monthlyValue">$0</dd></div>
+            </dl>
+            <label>Condiciones
+              <textarea id="terms" rows="4">Validez del presupuesto: 15 días. Forma de pago sugerida: 50% para iniciar y 50% contra entrega.</textarea>
+            </label>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <section id="printArea" aria-hidden="true"></section>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
